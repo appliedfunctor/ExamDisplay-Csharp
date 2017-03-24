@@ -1,0 +1,41 @@
+﻿<Window x:Class="ExamDisplay.Settings"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ExamDisplay Settings" Height="300" Width="300">
+    <Grid>
+        <Grid x:Name="SettingsPanel" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="#FF4F8FB4">
+            <StackPanel HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" Background="#7FFFFFFF">
+                <StackPanel Height="25" Orientation="Horizontal" >
+                    <Label Content="Board" MinWidth="75"/>
+                    <ComboBox x:Name="boardSelect" MinWidth="150" SelectionChanged="boardChange"/>
+                </StackPanel>
+                <StackPanel Height="25" Orientation="Horizontal" >
+                    <Label Content="Subject" MinWidth="75"/>
+                    <ComboBox x:Name="subjectSelect" MinWidth="150" SelectionChanged="subjectChange"/>
+                </StackPanel>
+                <StackPanel Height="25" Orientation="Horizontal" >
+                    <Label Content="Unit Code" MinWidth="75"/>
+                    <TextBox x:Name="unitSelect" MinWidth="150" TextChanged="setUnit"/>
+                </StackPanel>
+                <StackPanel Height="25" Orientation="Horizontal" >
+                    <Label Content="Duration" MinWidth="75"/>
+                    <TextBlock Text="H" MinWidth="15" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,5"/>
+                    <TextBox x:Name="DurationH" MinWidth="60" TextChanged="durationSet"/>
+                    <TextBlock Text="M" MinWidth="15" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,5"/>
+                    <TextBox x:Name="DurationM"  MinWidth="60" TextChanged="durationSet"/>
+                </StackPanel>
+                <StackPanel Height="25" Orientation="Horizontal" >
+                    <Label Content="Start Time" MinWidth="75"/>
+                    <TextBlock Text="H" MinWidth="15" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,5"/>
+                    <TextBox x:Name="StartH" MinWidth="60" TextChanged="startSet" />
+                    <TextBlock Text="M" MinWidth="15" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,5"/>
+                    <TextBox x:Name="StartM" MinWidth="60" TextChanged="startSet" />
+                </StackPanel>
+                <StackPanel x:Name="ScreenWrapper" Visibility="Visible">
+                    <Label x:Name="dv" Content="Screens: " />
+                    <WrapPanel x:Name="ScreenDisplay"></WrapPanel>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

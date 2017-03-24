@@ -1,0 +1,30 @@
+﻿<Window x:Class="ExamDisplay.Display"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ExamDisplay"
+        mc:Ignorable="d"
+        Title="Exam Display" Height="600" Width="800" WindowStartupLocation="Manual" WindowStyle="None" Loaded="OnLoad">
+    <Grid>
+        <Grid x:Name="DisplayGrid" SizeChanged="ResizeFonts">
+            <StackPanel HorizontalAlignment="Stretch" Margin="10,10,10,0" VerticalAlignment="Top">
+                <Grid HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Top" >
+                    <Label x:Name="CentreDisplay" Content="Centre:" HorizontalAlignment="Left"  FontSize="48"/>
+                    <Label x:Name="DateDisplay" Content="{Binding Path=DateDisplay}"  FontSize="48" HorizontalAlignment="Right"/>
+                </Grid>
+                <Label x:Name="ExamDisplay" Content="-- Exam not set --" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="48"/>
+            </StackPanel>
+            <Label x:Name="TimeDisplay" Content="{Binding Path=TimeDisplay}" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" FontSize="148"/>
+            <StackPanel HorizontalAlignment="Left" Margin="10,0,0,10" VerticalAlignment="Bottom">
+                <Label x:Name="StartDisplay" Content="Started: " HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="48"/>
+                <Label x:Name="FinishDisplay" Content="Finish: " HorizontalAlignment="Left" VerticalAlignment="Bottom" FontSize="48"/>
+            </StackPanel>
+            <StackPanel HorizontalAlignment="Right" Margin="0,0,10,10" VerticalAlignment="Bottom">
+                <Label x:Name="StartDisplay2" Content="Started: " HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="48"/>
+                <Label x:Name="FinishDisplay2" Content="Finish: " HorizontalAlignment="Left" VerticalAlignment="Bottom" FontSize="48"/>
+            </StackPanel>
+        </Grid>
+
+    </Grid>
+</Window>
