@@ -1,6 +1,8 @@
+using ExamDisplay.Library;
 using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -14,19 +16,23 @@ namespace ExamDisplay
     {
         //default data
         private string _settingsFilePath;
-        private readonly string _settingsFile = @"settings.cfg";
-        private readonly string _settingsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"ExamDisplay");
-        private const string DefaultCentre = "Unknown";
+        private string _scheduledFilePath;
+        private readonly string _settingsFile = "settings.cfg";
+        private readonly string _scheduledFile = $"{Pathing.ScheduledName()}.txt";
+        private readonly string _settingsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ExamDisplay");
+        public readonly string ScheduleDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ExamDisplay", "Schedule");
+        private const string DefaultCentre = "13340";
         private const string DefaultUnit = "";
-        private readonly string[] _defaultSubjects = { "English Language", "English Literature", "Maths A", "Biology", "Chemistry", "Physics", "Computer Science", "French", "History B", "Geography B", "Business Studies" };
-        private readonly string[] _defaultBoards = { "AQA", "OCR", "Edexcel", "WJEC", "QCA" };
+        private readonly string[] _defaultSubjects = { "English Language", "English Literature", "Maths A", "Biology", "Chemistry", "Physics", "Computer Science", "French", "History B", "Geography B", "Business Studies", "Latin" };
+        private readonly string[] _defaultBoards = { "AQA", "OCR", "Pearson", "WJEC", "QCA" };
         private const int DefaultStartH = 9;
         private const int DefaultStartM = 0;
         private const int DefaultDurationH = 1;
-        private const int DefaultDurationM = 0;
+        private const int DefaultDurationM = 30;
 
         private string[] _settingsArray;
         private bool _writeSettings = true;
+        private bool _writeSchedules = true;
         private string _centre;
 
         public string Centre {
@@ -34,21 +40,21 @@ namespace ExamDisplay
             set
             {
                 _centre = value;
-                WriteSettingsToFile();
             }
         }
 
         public string[] Subjects { get; private set; } 
         public string[] Boards { get; private set; }
+        public string[] Sessions { get; private set; }
 
-        public string Unit { get; private set; }
-        public string Board { get; private set; }
-        public string Subject { get; private set; }
+        public string Unit { get; set; }
+        public string Board { get; set; }
+        public string Subject { get; set; }
 
-        public int StartH { get; private set; }
-        public int StartM { get; private set; }
-        public int DurationH { get; private set; }
-        public int DurationM { get; private set; }
+        public int StartH { get; set; }
+        public int StartM { get; set; }
+        public int DurationH { get; set; }
+        public int DurationM { get; set; }
 
         public DataIo()
         {
@@ -57,25 +63,43 @@ namespace ExamDisplay
             
             //ensure write path exists
             Directory.CreateDirectory(_settingsDir);
+            Directory.CreateDirectory(ScheduleDir);
             _settingsFilePath = Path.Combine(_settingsDir, _settingsFile);
+            _scheduledFilePath = Path.Combine(ScheduleDir, _scheduledFile);
 
             //read data
-            ReadSettingsFomFile();
-            
-    }
+            ReadSettingsFomFile(_settingsFilePath);
+            //read scheduled exam data
+            ReadSettingsFomFile(_scheduledFilePath);
+
+        }
+
+        public void WriteOutSettings()
+        {
+            WriteSettingsToFile();
+        }
+
+        public void WriteOutSchedule(string file)
+        {
+            SaveScheduleToFile(file);
+        }
         
-        private void ReadSettingsFomFile()
+
+        private void ReadSettingsFomFile(string path)
         {
             try
             {
-                _settingsArray = File.ReadAllLines(_settingsFilePath);
+                _settingsArray = File.ReadAllLines(path);
                 ParseSettingsArray(_settingsArray);
             }
-            catch(FileNotFoundException)
+            catch (Exception ex) when (ex is FileNotFoundException || ex is DirectoryNotFoundException)
             {
                 //check if file exists
-                if(!System.IO.File.Exists(_settingsFilePath))
+                if (!File.Exists(path))
+                {
                     WriteSettingsToFile();
+                }
+                    
             }
         }
 
@@ -83,6 +107,7 @@ namespace ExamDisplay
         {
             Subjects = _defaultSubjects;
             Boards = _defaultBoards;
+            Sessions = new string[] { "AM", "PM" };
             _centre = DefaultCentre;
 
             Unit = DefaultUnit;
@@ -136,9 +161,23 @@ namespace ExamDisplay
                             if (!String.IsNullOrEmpty(settingsPair[1]))
                                 SetDuration(settingsPair[1]);
                             break;
+
+                        case "Board":
+                            if (!String.IsNullOrEmpty(settingsPair[1]))
+                                SetBoard(settingsPair[1]);
+                            break;
+
+                        case "Subject":
+                            if (!String.IsNullOrEmpty(settingsPair[1]))
+                                SetSubject(settingsPair[1]);
+                            break;
+
+                        case "Unit":
+                            if (!String.IsNullOrEmpty(settingsPair[1]))
+                                SetUnit(settingsPair[1]);
+                            break;
                     }
                 }
-
                 
             }
         }
@@ -169,6 +208,24 @@ namespace ExamDisplay
 
         }
 
+        private void SetUnit(string s)
+        {
+            //Strip whitespace
+            Unit = s.Trim();
+        }
+
+        private void SetBoard(string s)
+        {
+            //Strip whitespace
+            Board = s.Trim();
+        }
+
+        private void SetSubject(string s)
+        {
+            //Strip whitespace
+            Subject = s.Trim();
+        }
+
         private int GetTime(string t, TimeValue timeValue)
         {
             //set default
@@ -195,19 +252,54 @@ namespace ExamDisplay
                 {
                     "Centre = " + _centre,
                     "Subjects = " + String.Join(",", Subjects),
-                    "Boards = " + String.Join(",", Boards),
-                    "Start = " + StartH.ToString().PadLeft(2).Replace(' ', '0') + ":" + StartM.ToString().PadLeft(2).Replace(' ', '0'),
-                    "Duration = " + DurationH.ToString().PadLeft(2).Replace(' ', '0') + ":" + DurationM.ToString().PadLeft(2).Replace(' ', '0')
+                    "Boards = " + String.Join(",", Boards)
                 };
 
                 try
                 {
-                    System.IO.File.WriteAllLines(_settingsFilePath, settingsArrayFull);
+                    File.WriteAllLines(_settingsFilePath, settingsArrayFull);
                 }
                 catch
                 {
                     _writeSettings = false;
                     MessageBox.Show("Error - Could not write to settings file.\nPlease check permissions in executing folder.\nSaving settings has been disabled for this session.");
+                }
+            }
+        }
+
+        private void SaveScheduleToFile(string fileName)
+        {
+
+            if (_writeSchedules)
+            {
+
+                string filePath = Path.Combine(ScheduleDir, fileName);
+
+                string[] scheduleArray = new string[]
+                {
+                    "Board = " + Board,
+                    "Subject = " + Subject,
+                    "Unit = " + Unit,
+                    "Start = " + StartH.ToString().PadLeft(2).Replace(' ', '0') + ":" + StartM.ToString().PadLeft(2).Replace(' ', '0'),
+                    "Duration = " + DurationH.ToString().PadLeft(2).Replace(' ', '0') + ":" + DurationM.ToString().PadLeft(2).Replace(' ', '0')
+                };
+
+                StringBuilder message = new StringBuilder("Schedule Saved:");
+                foreach (string line in scheduleArray)
+                {
+                    message.Append("\n");
+                    message.Append(line);
+                }
+
+                try
+                {
+                    File.WriteAllLines(filePath, scheduleArray);
+                    MessageBox.Show(message.ToString());
+                }
+                catch
+                {
+                    _writeSchedules = false;
+                    MessageBox.Show("Error - Could not write to schedule file.\nPlease check permissions in executing folder.\nSaving schedules has been disabled for this session.");
                 }
             }
         }

@@ -55,16 +55,16 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>7E2D574C6730249D10499FCAFE38173E8915FED5</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>3E6A8602EE9A4E8E3F6381A42E29E64D309CD9FB</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>ExamDisplay_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>ExamDisplay_1_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>false</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <SignManifests>true</SignManifests>
+    <SignManifests>false</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
     <TargetZone>LocalIntranet</TargetZone>
@@ -103,6 +103,7 @@
     </Compile>
     <Compile Include="DisplayViewModel.cs" />
     <Compile Include="EventArgs\ScreenEventArgs.cs" />
+    <Compile Include="Library\Pathing.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Screens.cs" />
     <Compile Include="EventArgs\SettingsEventArgs.cs" />
@@ -143,7 +144,6 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <None Include="ExamDisplay_TemporaryKey.pfx" />
     <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

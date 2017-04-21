@@ -81,7 +81,9 @@ namespace ExamDisplay
             var dateString = DateTime.Now.ToString("dd MMM yyyy");
 
             if (DateDisplay != dateString)
+            {
                 DateDisplay = dateString;
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

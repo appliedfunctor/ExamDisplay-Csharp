@@ -19,6 +19,8 @@ using ExamDisplay.Properties;
 using Brush = System.Windows.Media.Brush;
 using Brushes = System.Windows.Media.Brushes;
 using TextBox = System.Windows.Controls.TextBox;
+using System.Diagnostics;
+using ExamDisplay.Library;
 
 namespace ExamDisplay
 {
@@ -47,6 +49,7 @@ namespace ExamDisplay
         string _unit;
         string _board;
         string _subject;
+        string _session;
 
         readonly Screens _screens = new Screens();
         readonly Dictionary<int, Border> _uiScreens = new Dictionary<int, Border>();
@@ -73,6 +76,13 @@ namespace ExamDisplay
         private void SetInitialData()
         {
             //set inital data
+            SetLoadedData();
+            //setup timer
+            settingsIoTimer.Tick += SettingsIoTimerTick;
+        }
+
+        private void SetLoadedData()
+        {
             _startHours = SettingsIoData.StartH;
             _startMinutes = SettingsIoData.StartM;
             _startTime = new TimeSpan(_startHours, _startMinutes, 0);
@@ -85,9 +95,13 @@ namespace ExamDisplay
             _unit = SettingsIoData.Unit;
             _board = SettingsIoData.Board;
             _subject = SettingsIoData.Subject;
+            _session = Pathing.CurrentSession();
+        }
 
-            //setup timer
-            settingsIoTimer.Tick += SettingsIoTimerTick;
+        private bool FileDataExists()
+        {
+            //implement
+            return false;
         }
 
         private void CreateDisplayWindow()
@@ -108,6 +122,7 @@ namespace ExamDisplay
             unitSelect.Text = _unit;
             boardSelect.SelectedValue = _board;
             subjectSelect.SelectedValue = _subject;
+            sessionSelect.SelectedValue = _session;
 
             DurationH.Text = _durationHours.ToString();
             DurationM.Text = _durationMinutes.ToString();
@@ -127,6 +142,9 @@ namespace ExamDisplay
 
             //Subject
             subjectSelect.ItemsSource = SettingsIoData.Subjects;
+
+            //Sessions
+            sessionSelect.ItemsSource = SettingsIoData.Sessions;
 
             _display.SetExamDisplay(_board, _subject, _unit);
         }
@@ -169,6 +187,8 @@ namespace ExamDisplay
                 //set the duration
                 _duration = new TimeSpan(_durationHours, _durationMinutes, 0);
                 _display.Duration = _duration;
+                SettingsIoData.DurationH = _durationHours;
+                SettingsIoData.DurationM = _durationMinutes;
             }
             
         }
@@ -208,9 +228,11 @@ namespace ExamDisplay
                     }
                 }
 
-                //set the duration
+                //set the start time
                 _startTime = new TimeSpan(_startHours, _startMinutes, 0);
                 _display.StartTime = _startTime;
+                SettingsIoData.StartH = _startHours;
+                SettingsIoData.StartM = _startMinutes;
             }
 
         }
@@ -224,17 +246,25 @@ namespace ExamDisplay
             {
                 _centre = senderBox.Text;
                 _display.SetCentreDisplay(_centre);
+                SettingsIoData.Centre = _centre;
 
                 //update Settings in data for saving.
-                settingsIoTimer.Interval = new TimeSpan(0, 0, 0, 3);
-                settingsIoTimer.Start();
+                RunIOWriteOut();
             }
+        }
+
+        private void RunIOWriteOut()
+        {
+            //settingsIoTimer.Stop();
+            //settingsIoTimer.Interval = new TimeSpan(0, 0, 0, 3);
+            //settingsIoTimer.Start();
+            SettingsIoData.WriteOutSettings();
         }
 
         private void SettingsIoTimerTick(object sender, EventArgs e)
         {
             //update centre number for data
-            SettingsIoData.Centre = _centre;
+            SettingsIoData.WriteOutSettings();
             settingsIoTimer.Stop();
             //MessageBox.Show("Timer Completed, Settings Written");
         }
@@ -246,6 +276,7 @@ namespace ExamDisplay
             {
                 _unit = senderBox.Text;
                 _display.SetExamDisplay(_board, _subject, _unit);
+                SettingsIoData.Unit = _unit;
             }
         }
         
@@ -256,6 +287,28 @@ namespace ExamDisplay
             {
                 _board = boardSelect.SelectedValue.ToString();
                 _display.SetExamDisplay(_board, _subject, _unit);
+                SettingsIoData.Board = _board;
+            }
+        }
+
+        private void SessionChange(object sender, SelectionChangedEventArgs e)
+        {
+            if (sessionSelect.SelectedValue != null)
+            {
+                _session = sessionSelect.SelectedValue.ToString();
+
+                switch (_session)
+                {
+                    case "AM":
+                        StartH.Text = "9";
+                        StartM.Text = "00";
+                        break;
+
+                    case "PM":
+                        StartH.Text = "13";
+                        StartM.Text = "30";
+                        break;
+                }
             }
         }
 
@@ -265,6 +318,7 @@ namespace ExamDisplay
             {
                 _subject = subjectSelect.SelectedValue.ToString();
                 _display.SetExamDisplay(_board, _subject, _unit);
+                SettingsIoData.Subject = _subject;
             }
         }
 
@@ -428,6 +482,18 @@ namespace ExamDisplay
             base.OnClosing(e);
         }
 
+        private void Show_Schedules_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start("explorer.exe", SettingsIoData.ScheduleDir);
+        }
+
+        private void Save_Schedule_Click(object sender, RoutedEventArgs e)
+        {
+            string file = datePicker.SelectedDate.Value.ToString("yyyy-MM-dd-");
+            file += _session+".txt";
+            SettingsIoData.WriteOutSchedule(file);
+        }
+        
     }
 }
 
